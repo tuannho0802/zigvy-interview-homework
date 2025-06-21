@@ -12,7 +12,6 @@ export default function Signup() {
     document.title = "Sign Up | ZigTask";
   }, []);
 
-  // Apply saved theme on mount
   useEffect(() => {
     const saved =
       localStorage.getItem("theme") || "light";
@@ -23,7 +22,6 @@ export default function Signup() {
     );
   }, []);
 
-  // Toggle dark/light
   const toggleTheme = () => {
     const newTheme =
       theme === "light" ? "dark" : "light";
@@ -42,7 +40,10 @@ export default function Signup() {
     try {
       await axios.post(
         "http://localhost:3000/auth/signup",
-        { email, password }
+        {
+          email,
+          password,
+        }
       );
       alert(
         "Signup successful. You can now log in."
@@ -57,20 +58,34 @@ export default function Signup() {
   };
 
   return (
-    <div className="flex h-screen min-w-screen items-center justify-center bg-gray-100 dark:bg-zinc-900 text-gray-900 dark:text-gray-100 transition-colors">
-      {/* Dark mode toggle top right */}
+    <div className="min-h-screen min-w-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-zinc-900 text-gray-900 dark:text-gray-100 px-4 transition-colors duration-300 relative">
+      {/* 🌙 Dark mode toggle top-right */}
       <button
         onClick={toggleTheme}
-        className="absolute top-4 right-4 bg-zinc-600 dark:bg-zinc-700 text-white px-3 py-1 rounded hover:bg-zinc-500 dark:hover:bg-zinc-600 transition"
+        className="absolute top-4 right-6 bg-zinc-600 dark:bg-zinc-700 text-white px-3 py-1 rounded hover:bg-zinc-500 dark:hover:bg-zinc-600 transition"
         title="Toggle Dark Mode"
       >
         {theme === "light" ? "🌙" : "☀️"}
       </button>
 
+      <p className="mb-6 text-2xl md:text-3xl font-extrabold text-center text-blue-700 dark:text-blue-400 tracking-wide">
+        🚀 To-do Task Manager
+      </p>
+
       <form
         onSubmit={handleSignup}
-        className="bg-white dark:bg-zinc-800 p-6 rounded shadow-md w-full max-w-sm"
+        className="bg-white dark:bg-zinc-800 w-full max-w-sm p-6 rounded-lg shadow-lg"
       >
+        <div className="flex justify-center font-thin antialiased text-xs mb-1 italic text-gray-400">
+          Provided by
+        </div>
+        <div className="flex justify-center mb-3">
+          <img
+            src="https://zigvy.com/wp-content/uploads/2017/12/zigvy-logo.svg"
+            alt="Zigvy Logo"
+            className="min-h-10 w-auto p-4 bg-zinc-700 dark:bg-zinc-800 rounded"
+          />
+        </div>
         <h1 className="text-2xl font-bold mb-4 text-center">
           Sign Up
         </h1>
@@ -97,11 +112,14 @@ export default function Signup() {
           required
         />
 
-        <button className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
+        <button
+          type="submit"
+          className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
+        >
           Create Account
         </button>
 
-        <p className="text-sm mt-4 text-center">
+        <p className="text-sm mt-4 text-center text-gray-600 dark:text-gray-300">
           Already have an account?{" "}
           <a
             href="/"

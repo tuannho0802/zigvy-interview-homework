@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import SearchBar from "./SearchBar";
 
-export default function Header() {
+type HeaderProps = {
+  onSearch?: (query: string) => void;
+};
+
+export default function Header({
+  onSearch,
+}: HeaderProps) {
   const navigate = useNavigate();
   const [theme, setTheme] = useState("light");
 
@@ -49,16 +56,25 @@ export default function Header() {
   );
 
   return (
-    <header className="flex items-center justify-between bg-cyan-900 dark:bg-gray-950 p-4 shadow text-white dark:text-gray-100 transition-colors duration-300">
-      <p className="text-7xl">
-        Welcome{" "}
-        <span className="text-red-500 dark:text-sky-400 italic text-3xl">
-          {user.email || "User"}
-        </span>
-      </p>
+    <header className="flex flex-col md:flex-row items-center justify-between gap-4 bg-cyan-900 dark:bg-gray-950 p-4 shadow text-white dark:text-gray-100 transition-colors duration-300 w-full overflow-hidden">
+      <div className="flex items-center gap-3 flex-wrap text-center md:text-left">
+        <img
+          src="https://zigvy.com/wp-content/uploads/2017/12/zigvy-logo.svg"
+          alt="Zigvy Logo"
+          className="h-10 w-auto"
+        />
+        <h1 className="text-2xl md:text-4xl font-semibold">
+          Welcome{" "}
+          <span className="text-red-500 dark:text-sky-400 italic text-lg md:text-2xl ml-1">
+            {user.email || "User"}
+          </span>
+        </h1>
+      </div>
 
-      <div className="flex items-center gap-4">
-        {/* 🌗 Dark mode toggle */}
+      <div className="flex items-center flex-wrap justify-center gap-2 md:gap-4 w-full md:w-auto">
+        {onSearch && (
+          <SearchBar onSearch={onSearch} />
+        )}
         <button
           onClick={toggleTheme}
           className="bg-zinc-600 dark:bg-zinc-700 hover:bg-zinc-500 dark:hover:bg-zinc-600 px-3 py-1 rounded text-sm transition-colors"
