@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import Header from "../components/Header";
@@ -17,6 +16,8 @@ import {
 } from "@dnd-kit/sortable";
 import SortableTask from "../components/SortableTask";
 import ColumnDroppable from "../components/ColumnDroppable";
+import TaskFormModal from "../components/TaskFormModal";
+import type { TaskFormData } from "../components/TaskFormModal";
 
 type Task = {
   id: number;
@@ -26,11 +27,11 @@ type Task = {
   status: "To Do" | "In Progress" | "Done";
 };
 
-const emptyForm = {
+const emptyForm: TaskFormData = {
   title: "",
   description: "",
   dueDate: "",
-  status: "To Do" as Task["status"],
+  status: "To Do",
 };
 
 export default function Dashboard() {
@@ -38,14 +39,12 @@ export default function Dashboard() {
     []
   );
   const [taskForm, setTaskForm] =
-    useState(emptyForm);
+    useState<TaskFormData>(emptyForm);
   const [editingId, setEditingId] = useState<
     number | null
   >(null);
   const [showForm, setShowForm] =
     useState(false);
-  const [searchQuery, setSearchQuery] =
-    useState("");
 
   useEffect(() => {
     fetchTasks();
@@ -62,37 +61,55 @@ export default function Dashboard() {
       });
   };
 
+  const [searchKeyword, setSearchKeyword] =
+    useState("");
+  const [searchDate, setSearchDate] =
+    useState("");
+
+  const localDateString = (dateStr: string) =>
+    new Date(dateStr).toLocaleDateString(
+      "en-CA"
+    );
+
   const groupByStatus = (
     status: Task["status"]
   ) =>
-    tasks.filter(
-      (task) =>
-        task.status === status &&
-        (task.title
+    tasks.filter((task) => {
+      const matchesKeyword =
+        task.title
           .toLowerCase()
           .includes(
-            searchQuery.toLowerCase()
+            searchKeyword.toLowerCase()
           ) ||
-          task.description
-            .toLowerCase()
-            .includes(
-              searchQuery.toLowerCase()
-            ) ||
-          task.dueDate.includes(searchQuery))
-    );
+        task.description
+          .toLowerCase()
+          .includes(
+            searchKeyword.toLowerCase()
+          );
+
+      const matchesDate =
+        !searchDate ||
+        localDateString(task.dueDate) ===
+          searchDate;
+
+      return (
+        task.status === status &&
+        matchesKeyword &&
+        matchesDate
+      );
+    });
 
   const handleSubmit = async (
-    e: React.FormEvent
+    data: TaskFormData
   ) => {
-    e.preventDefault();
     try {
       if (editingId) {
         await api.patch(
           `/tasks/${editingId}`,
-          taskForm
+          data
         );
       } else {
-        await api.post("/tasks", taskForm);
+        await api.post("/tasks", data);
       }
       setTaskForm(emptyForm);
       setEditingId(null);
@@ -109,12 +126,6 @@ export default function Dashboard() {
   };
 
   const handleEdit = (task: Task) => {
-    if (
-      !window.confirm(
-        `Edit task "${task.title}"?`
-      )
-    )
-      return;
     setTaskForm({
       title: task.title,
       description: task.description,
@@ -122,6 +133,7 @@ export default function Dashboard() {
       status: task.status,
     });
     setEditingId(task.id);
+    setShowForm(true);
   };
 
   const handleDelete = async (id: number) => {
@@ -147,10 +159,8 @@ export default function Dashboard() {
     );
     if (!draggedTask) return;
 
-    // Fix: Get correct status from drop zone or item data
     const targetStatus =
       over.data.current?.status;
-
     if (
       targetStatus &&
       draggedTask.status !== targetStatus
@@ -178,7 +188,10 @@ export default function Dashboard() {
 
   return (
     <>
-      <Header onSearch={setSearchQuery} />
+      <Header
+        onKeywordChange={setSearchKeyword}
+        onDateChange={setSearchDate}
+      />
       <div className="min-h-screen bg-gray-50 dark:bg-zinc-900 text-gray-900 dark:text-gray-100 p-4 transition duration-300">
         <h1 className="text-3xl font-bold mb-6 text-center">
           🗂️ Your Tasks
@@ -187,88 +200,21 @@ export default function Dashboard() {
         <div className="flex justify-end mb-4">
           <button
             onClick={() => {
-              setShowForm(!showForm);
+              setShowForm(true);
               setTaskForm(emptyForm);
               setEditingId(null);
             }}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300"
           >
-            {showForm
-              ? "Cancel"
-              : "+ Create Task"}
+            + Create Task
           </button>
         </div>
-
-        {showForm && (
-          <form
-            onSubmit={handleSubmit}
-            className="bg-white dark:bg-zinc-800 shadow rounded p-4 mb-6 grid grid-cols-1 md:grid-cols-4 gap-4"
-          >
-            <input
-              required
-              className="input-field"
-              placeholder="Title"
-              value={taskForm.title}
-              onChange={(e) =>
-                setTaskForm({
-                  ...taskForm,
-                  title: e.target.value,
-                })
-              }
-            />
-            <input
-              required
-              className="input-field"
-              placeholder="Description"
-              value={taskForm.description}
-              onChange={(e) =>
-                setTaskForm({
-                  ...taskForm,
-                  description: e.target.value,
-                })
-              }
-            />
-            <input
-              required
-              type="date"
-              className="input-field"
-              value={taskForm.dueDate}
-              onChange={(e) =>
-                setTaskForm({
-                  ...taskForm,
-                  dueDate: e.target.value,
-                })
-              }
-            />
-            <select
-              className="input-field"
-              value={taskForm.status}
-              onChange={(e) =>
-                setTaskForm({
-                  ...taskForm,
-                  status: e.target
-                    .value as Task["status"],
-                })
-              }
-            >
-              <option>To Do</option>
-              <option>In Progress</option>
-              <option>Done</option>
-            </select>
-            <button
-              type="submit"
-              className="md:col-span-4 mt-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-            >
-              Save Task
-            </button>
-          </form>
-        )}
 
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
-          autoScroll={true}
+          autoScroll
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
@@ -320,6 +266,19 @@ export default function Dashboard() {
             ))}
           </div>
         </DndContext>
+
+        {showForm && (
+          <TaskFormModal
+            initialData={taskForm}
+            onCancel={() => {
+              setShowForm(false);
+              setTaskForm(emptyForm);
+              setEditingId(null);
+            }}
+            onSubmit={handleSubmit}
+            isEdit={editingId !== null}
+          />
+        )}
       </div>
     </>
   );
