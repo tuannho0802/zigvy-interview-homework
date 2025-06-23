@@ -17,6 +17,7 @@ import {
 import SortableTask from "../components/SortableTask";
 import ColumnDroppable from "../components/ColumnDroppable";
 import TaskFormModal from "../components/TaskFormModal";
+import { useNavigate } from "react-router-dom";
 import type { TaskFormData } from "../components/TaskFormModal";
 
 type Task = {
@@ -50,6 +51,39 @@ export default function Dashboard() {
     fetchTasks();
     document.title = "Dashboard | ZigTask";
   }, []);
+
+  // Prevent users from going back
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/", { replace: true });
+      return;
+    }
+
+    const preventGoBack = () => {
+      window.history.pushState(
+        null,
+        "",
+        window.location.href
+      );
+    };
+
+    preventGoBack();
+
+    window.addEventListener(
+      "popstate",
+      preventGoBack
+    );
+
+    return () => {
+      window.removeEventListener(
+        "popstate",
+        preventGoBack
+      );
+    };
+  }, [navigate]);
 
   const fetchTasks = () => {
     api

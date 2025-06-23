@@ -6,7 +6,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // ✅ Swagger Config
+  // Swagger Config
   const config = new DocumentBuilder()
     .setTitle('ZigTask API')
     .setDescription('Task management API docs')

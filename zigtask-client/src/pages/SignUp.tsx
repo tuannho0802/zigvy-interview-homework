@@ -5,8 +5,17 @@ import { useNavigate } from "react-router-dom";
 export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [retypePassword, setRetypePassword] =
+    useState("");
   const [theme, setTheme] = useState("light");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, []);
 
   useEffect(() => {
     document.title = "Sign Up | ZigTask";
@@ -37,13 +46,16 @@ export default function Signup() {
     e: React.FormEvent
   ) => {
     e.preventDefault();
+
+    if (password !== retypePassword) {
+      alert("Passwords do not match.");
+      return;
+    }
+
     try {
       await axios.post(
         "http://localhost:3000/auth/signup",
-        {
-          email,
-          password,
-        }
+        { email, password }
       );
       alert(
         "Signup successful. You can now log in."
@@ -59,7 +71,6 @@ export default function Signup() {
 
   return (
     <div className="min-h-screen min-w-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-zinc-900 text-gray-900 dark:text-gray-100 px-4 transition-colors duration-300 relative">
-      {/* 🌙 Dark mode toggle top-right */}
       <button
         onClick={toggleTheme}
         className="absolute top-4 right-6 bg-zinc-600 dark:bg-zinc-700 text-white px-3 py-1 rounded hover:bg-zinc-500 dark:hover:bg-zinc-600 transition"
@@ -86,14 +97,15 @@ export default function Signup() {
             className="min-h-10 w-auto p-4 bg-zinc-700 dark:bg-zinc-800 rounded"
           />
         </div>
+
         <h1 className="text-2xl font-bold mb-4 text-center">
           Sign Up
         </h1>
 
         <input
           type="email"
-          className="w-full border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-700 text-black dark:text-white p-2 mb-3 rounded"
           placeholder="Email"
+          className="w-full border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-700 text-black dark:text-white p-2 mb-3 rounded"
           value={email}
           onChange={(e) =>
             setEmail(e.target.value)
@@ -103,11 +115,22 @@ export default function Signup() {
 
         <input
           type="password"
-          className="w-full border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-700 text-black dark:text-white p-2 mb-4 rounded"
           placeholder="Password"
+          className="w-full border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-700 text-black dark:text-white p-2 mb-3 rounded"
           value={password}
           onChange={(e) =>
             setPassword(e.target.value)
+          }
+          required
+        />
+
+        <input
+          type="password"
+          placeholder="Retype Password"
+          className="w-full border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-700 text-black dark:text-white p-2 mb-4 rounded"
+          value={retypePassword}
+          onChange={(e) =>
+            setRetypePassword(e.target.value)
           }
           required
         />

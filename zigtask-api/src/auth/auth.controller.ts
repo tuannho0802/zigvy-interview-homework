@@ -35,4 +35,32 @@ export class AuthController {
     async signIn(@Body() dto: { email: string; password: string }) {
         return this.authService.signin(dto);
     }
+
+    @Post('forgot-password')
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                email: { type: 'string', example: 'hoangtuanft0802@gmail.com' },
+            },
+        },
+    })
+    async forgotPassword(@Body() dto: { email: string }) {
+        return this.authService.sendResetPassword(dto.email);
+    }
+
+    @Post('reset-password')
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                token: { type: 'string', example: 'your-jwt-token' },
+                newPassword: { type: 'string', example: '123456' },
+            },
+        },
+    })
+    async resetPassword(@Body() dto: { token: string; newPassword: string }) {
+        return this.authService.resetPassword(dto.token, dto.newPassword);
+    }
+
 }
